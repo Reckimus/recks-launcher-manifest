@@ -1,0 +1,83 @@
+name: Build manifest
+
+on:
+  workflow_dispatch:      # allow manual "Run workflow"
+  schedule:
+    - cron: "0 * * * *"   # hourly; change to e.g. "0 */6 * * *" for every 6 hours
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write     # allow committing the updated mods.json
+    steps:
+      - name: Checkout manifest repo
+        uses: actions/checkout@v4
+
+      - name: Build mods.json
+        id: build
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const repos = [
+              // name = DLL filename in plugins
+              // repo = "Owner/Repo"
+              // asset = exact DLL asset name in Releases
+              { name: "PartyMod2.dll",               repo: "Reckimus/PartyMod",                asset: "PartyMod2.dll" },
+              { name: "Recks-Erenshor-Transmog.dll", repo: "Reckimus/Recks-Erenshor-Transmog", asset: "Recks-Erenshor-Transmog.dll" },
+              { name: "BossTracker.dll",             repo: "Reckimus/BossTracking",            asset: "BossTracker.dll" },
+              { name: "BuiltInTurnOFF.dll",          repo: "Reckimus/BossTracking",            asset: "BuiltInTurnOFF.dll" }
+            ];
+
+            const out = { mods: [] };
+
+            for (const r of repos) {
+              try {
+                // Prefer latest Release (tag + asset)
+                const [owner, repo] = r.repo.split('/');
+                const rel = await github.rest.repos.getLatestRelease({ owner, repo });
+
+                const asset = rel.data.assets.find(a => a.name === r.asset);
+                if (!asset) throw new Error(`Asset ${r.asset} not in latest release of ${r.repo}`);
+
+                let ver = rel.data.tag_name || "";
+                if (ver.toLowerCase().startsWith("v")) ver = ver.slice(1);
+
+                out.mods.push({
+                  name: r.name,
+                  version: ver,
+                  url: asset.browser_download_url
+                });
+              } catch (e) {
+                // Fallback to raw 'main' (or 'master') with short SHA as "version"
+                const [owner, repo] = r.repo.split('/');
+                let ref = null;
+                try {
+                  ref = await github.rest.repos.getBranch({ owner, repo, branch: "main" });
+                } catch {}
+                if (!ref) {
+                  ref = await github.rest.repos.getBranch({ owner, repo, branch: "master" });
+                }
+                const sha = ref?.data?.commit?.sha?.slice(0, 8) || "main";
+
+                out.mods.push({
+                  name: r.name,
+                  version: sha,
+                  url: `https://raw.githubusercontent.com/${r.repo}/main/${r.asset}`
+                });
+              }
+            }
+
+            const fs = require('fs');
+            fs.writeFileSync('mods.json', JSON.stringify(out, null, 2));
+            core.setOutput('mods', JSON.stringify(out));
+
+      - name: Commit & push if changed
+        run: |
+          if ! git diff --quiet mods.json; then
+            git config user.name  "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add mods.json
+            git commit -m "Auto-update manifest"
+            git push
+          fi
