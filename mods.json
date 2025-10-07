@@ -3,21 +3,21 @@
     {
       "name": "PartyMod2.dll",
       "version": "2.3.6",
-      "url": "https://github.com/Reckimus/PartyMod/releases/download/v2.3.6/PartyMod2.dll"
+      "url": "https://github.com/Reckimus/PartyMod/releases/download/2.3.6/PartyMod2.dll"
     },
     {
       "name": "Recks-Erenshor-Transmog.dll",
-      "version": "main",
+      "version": "e54898c3",
       "url": "https://raw.githubusercontent.com/Reckimus/Recks-Erenshor-Transmog/main/Recks-Erenshor-Transmog.dll"
     },
     {
       "name": "BossTracker.dll",
-      "version": "main",
+      "version": "fc1fae84",
       "url": "https://raw.githubusercontent.com/Reckimus/BossTracking/main/BossTracker.dll"
     },
     {
       "name": "BuiltInTurnOFF.dll",
-      "version": "main",
+      "version": "fc1fae84",
       "url": "https://raw.githubusercontent.com/Reckimus/BossTracking/main/BuiltInTurnOFF.dll"
     }
   ]
