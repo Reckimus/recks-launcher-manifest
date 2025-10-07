@@ -2,8 +2,8 @@
   "mods": [
     {
       "name": "PartyMod2.dll",
-      "version": "main",
-      "url": "https://raw.githubusercontent.com/Reckimus/PartyMod/main/PartyMod2.dll"
+      "version": "2.3.6",
+      "url": "https://github.com/Reckimus/PartyMod/releases/download/v2.3.6/PartyMod2.dll"
     },
     {
       "name": "Recks-Erenshor-Transmog.dll",
